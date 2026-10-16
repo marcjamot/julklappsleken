@@ -1,0 +1,1014 @@
+<!doctype html>
+<html lang="sv">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex">
+  <meta name="theme-color" content="#0a1a2b">
+  <title>Julklappsleken</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎁</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&display=swap">
+  <style>
+    :root {
+      color-scheme: light;
+      --sky-top: #0a1a2b;
+      --sky-mid: #0f2a30;
+      --sky-bottom: #143a2d;
+      --on-sky: #fbf3e4;
+      --card: #fffaf1;
+      --text: #24211d;
+      --muted: #6b645a;
+      --border: #eadfcb;
+      --field: #ffffff;
+      --red: #b3202a;
+      --red-dark: #8f1820;
+      --accent-ink: #b3202a;
+      --gold: #e2b14a;
+      --gold-dark: #c08d2b;
+      --chip: #f4ebdb;
+      --kraft: #f1ddb6;
+      --kraft-ink: #3d2a17;
+      --kraft-muted: #8a6a45;
+      --shadow: 0 24px 60px rgba(0, 0, 0, 0.5);
+      --display: "Fraunces", "Iowan Old Style", Georgia, serif;
+      --sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+      --knit: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='22' viewBox='0 0 20 22'%3E%3Crect width='20' height='22' fill='%23b3202a'/%3E%3Cpath d='M0 3h20M0 19h20' stroke='%23fbf3e4' stroke-width='1.4' stroke-dasharray='2 2'/%3E%3Cpath d='M10 6.5l4 4.5-4 4.5-4-4.5z' fill='none' stroke='%23fbf3e4' stroke-width='1.6'/%3E%3Ccircle cx='0' cy='11' r='1.5' fill='%23fbf3e4'/%3E%3Ccircle cx='20' cy='11' r='1.5' fill='%23fbf3e4'/%3E%3C/svg%3E");
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        color-scheme: dark;
+        --sky-top: #050e18;
+        --sky-mid: #091c20;
+        --sky-bottom: #0c261d;
+        --card: #13221b;
+        --text: #f3ecdf;
+        --muted: #a7b4ab;
+        --border: #284035;
+        --field: #0d1914;
+        --accent-ink: #ff8d94;
+        --chip: #1c3128;
+        --shadow: 0 24px 60px rgba(0, 0, 0, 0.7);
+      }
+    }
+
+    /* Mobile first; wider screens are adjusted at the bottom. */
+
+    * { box-sizing: border-box; }
+    [hidden] { display: none !important; }
+    html { background: var(--sky-bottom); }
+    html, body { margin: 0; }
+    body {
+      position: relative;
+      min-height: 100vh;
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 76px 16px 140px;
+      color: var(--text);
+      font-family: var(--sans);
+      line-height: 1.5;
+      overflow-x: hidden;
+      -webkit-tap-highlight-color: transparent;
+    }
+    /* The night sky stays put while the page scrolls, also on iOS. */
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      background:
+        radial-gradient(ellipse 90% 40% at 50% 8%, rgba(226, 177, 74, 0.14), transparent 70%),
+        linear-gradient(180deg, var(--sky-top) 0%, var(--sky-mid) 55%, var(--sky-bottom) 100%);
+    }
+
+    /* String of lights */
+    .lights { position: absolute; top: 0; left: 0; right: 0; height: 70px; z-index: 3; pointer-events: none; }
+    .lights svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+    .lights path { fill: none; stroke: #26332d; stroke-width: 2; }
+    .bulb {
+      position: absolute;
+      width: 10px;
+      height: 15px;
+      margin-left: -5px;
+      border-radius: 50% 50% 50% 50% / 40% 40% 60% 60%;
+      background: radial-gradient(circle at 35% 30%, rgba(255, 255, 255, 0.8), transparent 45%), var(--c);
+      box-shadow: 0 0 10px 2px var(--c), 0 0 24px 6px color-mix(in srgb, var(--c) 45%, transparent);
+      transform: rotate(var(--tilt));
+      transform-origin: 50% -4px;
+      animation: twinkle var(--speed) ease-in-out var(--delay) infinite;
+    }
+    .bulb::before {
+      content: "";
+      position: absolute;
+      top: -5px;
+      left: 2px;
+      width: 6px;
+      height: 6px;
+      border-radius: 2px;
+      background: #2f3b35;
+    }
+    @keyframes twinkle {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.55; box-shadow: 0 0 4px 1px var(--c); }
+    }
+
+    /* Snowy landscape */
+    .landscape {
+      position: fixed;
+      left: 0;
+      bottom: 0;
+      width: 100%;
+      height: 120px;
+      z-index: 0;
+      pointer-events: none;
+    }
+    .window-glow { animation: flicker 4s ease-in-out infinite; }
+    @keyframes flicker {
+      0%, 100% { opacity: 0.9; }
+      45% { opacity: 0.7; }
+      60% { opacity: 1; }
+    }
+
+    .snow { position: fixed; inset: 0; z-index: 1; pointer-events: none; overflow: hidden; }
+    .snow span {
+      position: absolute;
+      top: -20px;
+      left: var(--x);
+      width: var(--s);
+      height: var(--s);
+      border-radius: 50%;
+      background: #fff;
+      opacity: var(--o);
+      animation: fall var(--d) linear var(--delay) infinite;
+    }
+    .snow span.flake {
+      width: auto;
+      height: auto;
+      background: none;
+      color: #fff;
+      font-size: var(--s);
+      line-height: 1;
+    }
+    @keyframes fall {
+      to { transform: translate(var(--drift), 110vh) rotate(var(--spin)); }
+    }
+
+    header { position: relative; z-index: 2; text-align: center; margin-bottom: 22px; color: var(--on-sky); }
+    h1 {
+      margin: 0;
+      font-family: var(--display);
+      font-weight: 700;
+      font-size: clamp(2.4rem, 11vw, 3rem);
+      letter-spacing: -0.015em;
+      line-height: 1.05;
+      text-shadow: 0 2px 24px rgba(226, 177, 74, 0.3);
+    }
+    .year {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      margin: 8px 0 0;
+      color: var(--gold);
+      font-size: 0.8rem;
+      font-weight: 600;
+      letter-spacing: 0.3em;
+      text-indent: 0.3em;
+    }
+    .year::before, .year::after { content: ""; width: 28px; height: 1px; background: currentColor; opacity: 0.6; }
+    .year:empty { display: none; }
+
+    main {
+      position: relative;
+      z-index: 2;
+      width: 100%;
+      max-width: 440px;
+      padding: 42px 20px 22px;
+      background: var(--card);
+      border-radius: 16px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+    main::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 22px;
+      background: var(--knit) repeat-x center;
+    }
+
+    p { margin: 0; }
+    .lead { color: var(--muted); margin-bottom: 18px; }
+    .center { text-align: center; }
+
+    label { display: block; font-weight: 600; font-size: 0.9rem; margin-bottom: 6px; }
+    .field { display: flex; gap: 8px; }
+    input {
+      flex: 1;
+      min-width: 0;
+      min-height: 48px;
+      padding: 12px 14px;
+      font: inherit;
+      font-size: 1rem;
+      color: var(--text);
+      background: var(--field);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+    }
+    input:focus { outline: 2px solid var(--gold); outline-offset: 1px; border-color: transparent; }
+
+    button {
+      min-height: 44px;
+      padding: 8px 14px;
+      font: inherit;
+      color: var(--text);
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      cursor: pointer;
+    }
+    button:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+    button.primary {
+      width: 100%;
+      min-height: 50px;
+      margin-top: 16px;
+      font-weight: 600;
+      color: #fff;
+      background: linear-gradient(180deg, #c42733, var(--red));
+      border-color: transparent;
+      box-shadow: 0 2px 0 var(--red-dark), 0 8px 20px rgba(179, 32, 42, 0.25);
+    }
+    button.primary:active { transform: translateY(1px); box-shadow: 0 1px 0 var(--red-dark); }
+    button:disabled { opacity: 0.6; cursor: progress; }
+    button.small { min-height: 38px; padding: 6px 12px; font-size: 0.9rem; }
+    button.quiet { display: block; margin: 26px auto 0; color: var(--muted); }
+    @media (hover: hover) {
+      button:hover { background: var(--chip); }
+      button.primary:hover { background: var(--red-dark); }
+    }
+
+    .error { min-height: 1.5em; margin-top: 12px; color: var(--accent-ink); font-size: 0.95rem; }
+
+    .greeting { font-family: var(--display); font-size: 1.7rem; font-weight: 700; margin-bottom: 6px; text-align: center; }
+    .wrapped .lead { text-align: center; }
+
+    /* The present */
+    .gift {
+      all: unset;
+      position: relative;
+      display: block;
+      width: 150px;
+      height: 142px;
+      margin: 18px auto 4px;
+      cursor: pointer;
+      transform-origin: 50% 100%;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .gift:disabled { cursor: default; }
+    .gift:focus-visible { outline: 2px solid var(--gold); outline-offset: 8px; border-radius: 12px; }
+    .gift.ready { animation: wobble 3.2s ease-in-out 1s infinite; }
+    .gift-box, .gift-lid {
+      position: absolute;
+      border-radius: 6px;
+      background:
+        linear-gradient(90deg, transparent calc(50% - 10px), var(--gold) calc(50% - 10px), var(--gold) calc(50% + 10px), transparent calc(50% + 10px)),
+        repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0 7px, transparent 7px 14px),
+        var(--red);
+    }
+    .gift-box {
+      left: 14px;
+      right: 14px;
+      bottom: 0;
+      height: 86px;
+      box-shadow: inset 0 14px 10px -8px rgba(0, 0, 0, 0.25);
+      transition: transform 0.35s ease 0.2s, opacity 0.35s ease 0.2s;
+    }
+    .gift-lid {
+      z-index: 1;
+      left: 6px;
+      right: 6px;
+      top: 36px;
+      height: 26px;
+      background-color: #c42733;
+      box-shadow: 0 4px 0 rgba(0, 0, 0, 0.15);
+      transition: transform 0.55s cubic-bezier(0.3, 1.4, 0.5, 1), opacity 0.4s ease 0.25s;
+    }
+    .bow { position: absolute; left: 50%; top: 0; }
+    .bow::before, .bow::after {
+      content: "";
+      position: absolute;
+      bottom: -3px;
+      width: 36px;
+      height: 26px;
+      border: 7px solid var(--gold);
+      border-radius: 50%;
+    }
+    .bow::before { right: -1px; transform: rotate(-22deg); transform-origin: 100% 100%; }
+    .bow::after { left: -1px; transform: rotate(22deg); transform-origin: 0 100%; }
+    .gift-lid::after {
+      content: "";
+      position: absolute;
+      top: -7px;
+      left: 50%;
+      width: 16px;
+      height: 13px;
+      margin-left: -8px;
+      border-radius: 4px;
+      background: var(--gold-dark);
+    }
+    .gift.open { animation: none; }
+    .gift.open .gift-lid { transform: translate(46px, -80px) rotate(32deg); opacity: 0; }
+    .gift.open .gift-box { transform: scale(0.85); opacity: 0; }
+    @keyframes wobble {
+      0%, 76%, 100% { transform: rotate(0); }
+      80% { transform: rotate(-5deg); }
+      84% { transform: rotate(5deg); }
+      88% { transform: rotate(-3deg); }
+      92% { transform: rotate(2deg); }
+    }
+
+    /* The gift tag: Till / Från */
+    .tag {
+      position: relative;
+      width: min(100%, 270px);
+      margin: 46px auto 0;
+      transform: rotate(-2deg);
+      transform-origin: 50% 0;
+      filter: drop-shadow(0 10px 14px rgba(0, 0, 0, 0.22));
+    }
+    .revealed .tag { animation: swing 1.6s cubic-bezier(0.3, 0.6, 0.4, 1) both; }
+    @keyframes swing {
+      0% { transform: translateY(-30px) rotate(-16deg); opacity: 0; }
+      20% { opacity: 1; }
+      42% { transform: rotate(9deg); }
+      62% { transform: rotate(-6deg); }
+      80% { transform: rotate(1deg); }
+      100% { transform: rotate(-2deg); }
+    }
+    .twine { position: absolute; left: 50%; top: -42px; width: 60px; height: 66px; margin-left: -30px; z-index: 1; overflow: visible; }
+    .tag-card {
+      padding: 46px 18px 24px;
+      text-align: center;
+      color: var(--kraft-ink);
+      background:
+        radial-gradient(circle at 50% 22px, var(--card) 0 7px, #d4b483 7.5px 10.5px, transparent 11px),
+        linear-gradient(165deg, #f6e6c6, var(--kraft) 55%, #e8cf9f);
+      clip-path: polygon(24% 0, 76% 0, 100% 13%, 100% 100%, 0 100%, 0 13%);
+    }
+    .tag-label {
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.25em;
+      text-indent: 0.25em;
+      text-transform: uppercase;
+      color: var(--kraft-muted);
+    }
+    .tag-name {
+      font-family: var(--display);
+      font-weight: 700;
+      line-height: 1.1;
+      overflow-wrap: anywhere;
+    }
+    .tag-name.to { font-size: clamp(2.2rem, 11vw, 2.8rem); color: #b3202a; visibility: hidden; }
+
+    /* The whole tag is the hold area. The name only shows while it's held, so it can't be shown by accident. */
+    .tag {
+      cursor: pointer;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-touch-callout: none;
+      touch-action: none;
+    }
+    .tag:focus-visible { outline: 2px solid var(--gold); outline-offset: 6px; border-radius: 6px; }
+    .tag-card { transition: transform 0.12s; }
+    .to-slot {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 96px;
+      margin: 6px -4px 0;
+    }
+    .cover {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      padding: 0 12px;
+      border-radius: 12px;
+      background: repeating-linear-gradient(135deg, #b3202a 0 12px, #c42733 12px 24px);
+      box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.18), 0 3px 0 #8f1820;
+      color: #fbf3e4;
+      text-align: left;
+      transition: opacity 0.12s;
+    }
+    .cover svg { flex: none; width: 34px; height: 34px; animation: press 1.8s ease-in-out infinite; }
+    .cover strong { display: block; font-size: 1.25rem; line-height: 1.2; }
+    .cover small { display: block; font-size: 0.9rem; opacity: 0.9; }
+    @keyframes press {
+      0%, 60%, 100% { transform: none; }
+      30% { transform: translateY(3px) scale(0.9); }
+    }
+    .holding .to { visibility: visible; }
+    .holding .cover { opacity: 0; }
+    .holding .tag-card { transform: scale(0.98); }
+    .hint {
+      margin-top: 20px;
+      padding: 12px 16px;
+      border-radius: 12px;
+      background: var(--chip);
+      font-size: 1rem;
+      font-weight: 600;
+      text-align: center;
+    }
+    .tag-name.from { margin-top: 2px; font-size: 1.35rem; font-weight: 500; }
+    .tag-divider { width: 70%; margin: 16px auto 12px; border: 0; border-top: 1.5px dashed rgba(61, 42, 23, 0.3); }
+    .secret { margin-top: 12px; color: var(--muted); font-size: 0.9rem; text-align: center; }
+
+    /* Regler */
+    .rules-box { margin-top: 26px; padding-top: 20px; border-top: 1px dashed var(--border); }
+    .rules-box.appear { animation: rise 0.6s ease 0.7s both; }
+    @keyframes rise {
+      from { transform: translateY(12px); opacity: 0; }
+      to { transform: none; opacity: 1; }
+    }
+    .section-title {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 14px;
+      color: var(--muted);
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.25em;
+      text-indent: 0.25em;
+      text-transform: uppercase;
+    }
+    .section-title::before, .section-title::after { content: ""; width: 28px; height: 1px; background: currentColor; opacity: 0.5; }
+    .budget {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 16px;
+      margin-bottom: 14px;
+      border-radius: 12px;
+      background: var(--chip);
+    }
+    .budget-label { color: var(--muted); }
+    .budget-amount { font-family: var(--display); font-size: 1.8rem; font-weight: 700; line-height: 1.1; color: var(--accent-ink); }
+    .rules { display: grid; gap: 10px; margin: 0; padding: 0; list-style: none; }
+    .rules li { position: relative; padding-left: 28px; }
+    .rules li::before {
+      content: "";
+      position: absolute;
+      left: 1px;
+      top: 0.2em;
+      width: 17px;
+      height: 17px;
+      background: var(--gold);
+      clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+    }
+
+    .confetti { position: fixed; inset: 0; z-index: 10; pointer-events: none; }
+    .confetti span {
+      position: absolute;
+      left: var(--x0);
+      top: var(--y0);
+      width: var(--w);
+      height: var(--h);
+      border-radius: 2px;
+      background: var(--c);
+      animation: burst 1.5s cubic-bezier(0.15, 0.7, 0.3, 1) forwards;
+    }
+    @keyframes burst {
+      0% { transform: translate(0, 0) rotate(0); opacity: 1; }
+      70% { opacity: 1; }
+      100% { transform: translate(var(--tx), calc(var(--ty) + 140px)) rotate(var(--r)); opacity: 0; }
+    }
+
+    /* Master view */
+    .admin-title { font-family: var(--display); font-size: 1.7rem; font-weight: 700; }
+    .people { list-style: none; margin: 18px 0 0; padding: 0; }
+    .people li { padding: 12px 0; border-top: 1px dashed var(--border); }
+    .people li:last-child { border-bottom: 1px dashed var(--border); }
+    .row { display: flex; align-items: center; gap: 8px; }
+    .row .name { flex: 1; font-weight: 600; overflow-wrap: anywhere; }
+    .password {
+      display: inline-block;
+      margin-top: 6px;
+      padding: 2px 8px;
+      font-family: var(--mono);
+      font-size: 0.9rem;
+      background: var(--chip);
+      border-radius: 6px;
+      overflow-wrap: anywhere;
+    }
+    .password.masked { color: var(--muted); letter-spacing: 0.1em; }
+
+    /* Wider screens */
+    @media (min-width: 640px) {
+      body { justify-content: center; padding: 110px 24px 190px; }
+      header { margin-bottom: 30px; }
+      h1 { font-size: 4rem; }
+      main { padding: 50px 32px 30px; border-radius: 18px; }
+      .landscape { height: clamp(150px, 24vh, 230px); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .snow, .confetti { display: none; }
+      .bulb, .window-glow, .gift.ready, .revealed .tag, .rules-box.appear, .cover svg { animation: none; }
+      .gift-box, .gift-lid { transition: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="lights" aria-hidden="true"><svg><path /></svg></div>
+
+  <svg class="landscape" viewBox="0 0 1440 240" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
+    <defs>
+      <symbol id="pine" viewBox="0 0 40 64">
+        <rect x="17.5" y="52" width="5" height="12" fill="#2e211a" />
+        <path d="M20 0 31 17h-5l9 15h-6l11 22H0l11-22H5l9-15H9Z" fill="currentColor" />
+        <path d="M20 0l4 6q-4-1.5-8 0Z" fill="#eef4f8" />
+        <path d="M10 17h20M6 32h28M1.5 54h37" stroke="#eef4f8" stroke-width="2.6" stroke-linecap="round" />
+      </symbol>
+      <radialGradient id="glow">
+        <stop offset="0" stop-color="#ffcf6b" stop-opacity="0.6" />
+        <stop offset="1" stop-color="#ffcf6b" stop-opacity="0" />
+      </radialGradient>
+    </defs>
+
+    <g color="#11322b" opacity="0.85">
+      <use href="#pine" x="20" y="96" width="22" height="35" />
+      <use href="#pine" x="70" y="88" width="26" height="42" />
+      <use href="#pine" x="300" y="100" width="22" height="35" />
+      <use href="#pine" x="335" y="94" width="24" height="38" />
+      <use href="#pine" x="520" y="100" width="22" height="35" />
+      <use href="#pine" x="560" y="92" width="26" height="42" />
+      <use href="#pine" x="610" y="102" width="20" height="32" />
+      <use href="#pine" x="770" y="94" width="24" height="38" />
+      <use href="#pine" x="1080" y="88" width="26" height="42" />
+      <use href="#pine" x="1120" y="96" width="22" height="35" />
+      <use href="#pine" x="1250" y="100" width="22" height="35" />
+      <use href="#pine" x="1395" y="96" width="24" height="38" />
+    </g>
+
+    <path d="M0 160C200 120 420 140 640 130S1000 112 1180 120 1360 140 1440 132V240H0Z" fill="#c3d3df" />
+
+    <g color="#174438">
+      <use href="#pine" x="170" y="92" width="36" height="58" />
+      <use href="#pine" x="225" y="104" width="30" height="48" />
+      <use href="#pine" x="600" y="86" width="34" height="54" />
+      <use href="#pine" x="990" y="74" width="38" height="60" />
+      <use href="#pine" x="1030" y="88" width="30" height="48" />
+    </g>
+
+    <g transform="translate(660 64) scale(1.3)">
+      <rect x="10" y="28" width="60" height="34" fill="#a3262a" />
+      <rect x="10" y="28" width="3.5" height="34" fill="#f3eee6" />
+      <rect x="66.5" y="28" width="3.5" height="34" fill="#f3eee6" />
+      <rect x="54" y="6" width="7" height="14" fill="#7a1c1f" />
+      <rect x="52.5" y="4" width="10" height="3.5" rx="1.75" fill="#eef4f8" />
+      <path d="M4 30 15 12h50l11 18Z" fill="#eef4f8" />
+      <rect x="6" y="29" width="68" height="3" fill="#3a2a25" />
+      <rect x="18" y="38" width="12" height="12" fill="#ffd47a" stroke="#f3eee6" stroke-width="1.5" />
+      <rect x="50" y="38" width="12" height="12" fill="#ffd47a" stroke="#f3eee6" stroke-width="1.5" />
+      <path d="M24 38v12M18 44h12M56 38v12M50 44h12" stroke="#f3eee6" stroke-width="1.2" />
+      <rect x="35" y="40" width="10" height="22" fill="#5c1518" stroke="#f3eee6" stroke-width="1.2" />
+      <g class="window-glow">
+        <circle cx="24" cy="44" r="20" fill="url(#glow)" />
+        <circle cx="56" cy="44" r="20" fill="url(#glow)" />
+      </g>
+    </g>
+    <ellipse cx="712" cy="145" rx="80" ry="6" fill="#c3d3df" />
+
+    <g color="#1c5142">
+      <use href="#pine" x="10" y="100" width="62" height="99" />
+      <use href="#pine" x="84" y="128" width="44" height="70" />
+      <use href="#pine" x="440" y="136" width="38" height="60" />
+      <use href="#pine" x="900" y="140" width="34" height="54" />
+      <use href="#pine" x="1180" y="132" width="40" height="64" />
+      <use href="#pine" x="1290" y="96" width="64" height="102" />
+      <use href="#pine" x="1370" y="126" width="46" height="74" />
+    </g>
+
+    <path d="M0 196C260 170 520 192 760 184S1180 168 1440 186V240H0Z" fill="#eaf1f6" />
+  </svg>
+
+  <div class="snow" aria-hidden="true"></div>
+  <div class="confetti" aria-hidden="true"></div>
+
+  <header>
+    <h1>Julklappsleken</h1>
+    <p class="year" id="year"></p>
+  </header>
+
+  <main id="card">
+    <section id="loading">
+      <p class="center lead">Laddar…</p>
+    </section>
+
+    <section id="empty" hidden>
+      <p class="center">Julklappsleken har inte börjat än. Titta in igen senare.</p>
+    </section>
+
+    <section id="failed" hidden>
+      <p class="center">Något gick fel. Ladda om sidan och försök igen.</p>
+    </section>
+
+    <section id="login" hidden>
+      <p class="lead">Skriv in ditt lösenord för att se vem du ska köpa julklapp till.</p>
+      <form id="login-form">
+        <label for="password">Lösenord</label>
+        <div class="field">
+          <input id="password" type="password" autocomplete="current-password" autocapitalize="none" autocorrect="off" spellcheck="false" required>
+          <button type="button" id="toggle-password" aria-controls="password">Visa</button>
+        </div>
+        <button type="submit" class="primary" id="submit">Logga in</button>
+        <p class="error" id="error" role="alert"></p>
+      </form>
+    </section>
+
+    <section id="person" hidden>
+      <p class="greeting" id="greeting"></p>
+
+      <div id="wrapped" class="wrapped">
+        <p class="lead" id="wrapped-text"></p>
+        <button type="button" class="gift" id="gift" aria-label="Öppna paketet">
+          <span class="gift-lid"><span class="bow"></span></span>
+          <span class="gift-box"></span>
+        </button>
+      </div>
+
+      <div id="revealed" class="revealed" hidden>
+        <div class="tag" id="peek" role="button" tabindex="0" aria-label="Håll in för att se vem du ska köpa julklapp till">
+          <svg class="twine" viewBox="0 0 60 66" aria-hidden="true">
+            <path d="M30 64C12 46 12 14 30 4 48 14 48 46 30 64" fill="none" stroke="#fbf3e4" stroke-width="3" stroke-linecap="round" />
+            <path d="M30 64C12 46 12 14 30 4 48 14 48 46 30 64" fill="none" stroke="#b3202a" stroke-width="3" stroke-dasharray="4 4" />
+          </svg>
+          <div class="tag-card">
+            <p class="tag-label">Till</p>
+            <div class="to-slot">
+              <p class="tag-name to" id="to"></p>
+              <span class="cover" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M22 14a8 8 0 0 1-8 8" />
+                  <path d="M18 11v-1a2 2 0 0 0-2-2a2 2 0 0 0-2 2" />
+                  <path d="M14 10V9a2 2 0 0 0-2-2a2 2 0 0 0-2 2v1" />
+                  <path d="M10 9.5V4a2 2 0 0 0-2-2a2 2 0 0 0-2 2v10" />
+                  <path d="M18 11a2 2 0 1 1 4 0v3a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15" />
+                </svg>
+                <span><strong>Håll in här</strong><small>för att se namnet</small></span>
+              </span>
+            </div>
+            <hr class="tag-divider">
+            <p class="tag-label">Från</p>
+            <p class="tag-name from" id="from"></p>
+          </div>
+        </div>
+        <p class="hint" id="peek-hint"></p>
+        <p class="secret">Håll det hemligt!</p>
+      </div>
+
+      <div class="rules-box" id="rules-box">
+        <p class="section-title">Regler</p>
+        <div class="budget" id="budget">
+          <span class="budget-label">Maxbelopp</span>
+          <span class="budget-amount" id="budget-amount"></span>
+        </div>
+        <ul class="rules" id="rules"></ul>
+      </div>
+
+      <button type="button" class="quiet logout">Logga ut</button>
+    </section>
+
+    <section id="admin" hidden>
+      <p class="admin-title">Alla lösenord</p>
+      <p class="lead" id="admin-status"></p>
+      <ul class="people" id="people"></ul>
+      <button type="button" class="quiet logout">Logga ut</button>
+    </section>
+  </main>
+
+  <script>
+    // Browsers block module scripts and data files on pages opened straight from disk, so explain instead of hanging.
+    if (location.protocol === 'file:') {
+      document.getElementById('loading').innerHTML =
+        '<p class="center">Sidan behöver en webbserver. Kör <code>npm start</code> i projektmappen och öppna ' +
+        '<a href="http://localhost:2412">localhost:2412</a>.</p>';
+    }
+  </script>
+  <script type="module">
+    import { openEntry, openVault } from './crypto.js';
+
+    const $ = (id) => document.getElementById(id);
+    const views = ['loading', 'empty', 'failed', 'login', 'person', 'admin'];
+    const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
+    const FESTIVE = ['#ff4d5e', '#ffd166', '#5ad18a', '#6cc3ff', '#ff9f43'];
+    let file;
+
+    function show(view) {
+      for (const id of views) $(id).hidden = id !== view;
+      scrollTo(0, 0);
+    }
+
+    async function fetchJson(url) {
+      const response = await fetch(url, { cache: 'no-cache' });
+      if (response.status === 404) return null;
+      if (!response.ok) throw new Error(`${url}: ${response.status}`);
+      return response.json();
+    }
+
+    async function load() {
+      try {
+        const years = await fetchJson('data/years.json');
+        if (!years?.length) return show('empty');
+        const year = Math.max(...years);
+        file = await fetchJson(`data/${year}.json`);
+        if (!file) return show('empty');
+        $('year').textContent = year;
+        document.title = `Julklappsleken ${year}`;
+        show('login');
+      } catch (error) {
+        console.error(error);
+        show('failed');
+      }
+    }
+
+    // Logging in
+
+    $('login-form').addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const password = $('password').value;
+      if (!password.trim()) return;
+      $('submit').disabled = true;
+      $('submit').textContent = 'Loggar in…';
+      $('error').textContent = '';
+      try {
+        const [vault, entry] = await Promise.all([openVault(file, password), openEntry(file, password)]);
+        if (vault) showAdmin(vault);
+        else if (entry) showPerson(entry);
+        else $('error').textContent = 'Fel lösenord. Kolla stavningen och försök igen.';
+        if (vault || entry) {
+          $('password').value = '';
+          $('password').blur();
+        }
+      } finally {
+        $('submit').disabled = false;
+        $('submit').textContent = 'Logga in';
+      }
+    });
+
+    $('toggle-password').addEventListener('click', () => {
+      const input = $('password');
+      const reveal = input.type === 'password';
+      input.type = reveal ? 'text' : 'password';
+      $('toggle-password').textContent = reveal ? 'Dölj' : 'Visa';
+    });
+
+    for (const button of document.querySelectorAll('.logout')) {
+      button.addEventListener('click', () => {
+        $('to').textContent = '';
+        $('people').replaceChildren();
+        show('login');
+      });
+    }
+
+    // A person's page: a present to open, then a gift tag saying Till / Från, and the rules
+
+    function showPerson(entry) {
+      const drawn = Boolean(entry.to);
+      $('greeting').textContent = `Hej ${entry.from}!`;
+      $('greeting').hidden = false;
+      holding(false);
+      $('to').textContent = entry.to ?? '';
+      $('from').textContent = entry.from;
+      $('wrapped-text').textContent = drawn
+        ? 'Tryck på paketet för att öppna det.'
+        : 'Lottningen är inte gjord än. Titta in igen senare.';
+      $('gift').classList.remove('open');
+      $('gift').classList.toggle('ready', drawn);
+      $('gift').disabled = !drawn;
+      $('wrapped').hidden = false;
+      $('revealed').hidden = true;
+
+      $('budget').hidden = !entry.budget;
+      $('budget-amount').textContent = entry.budget ?? '';
+      $('rules').replaceChildren(
+        ...(entry.rules ?? []).map((rule) => {
+          const item = document.createElement('li');
+          item.textContent = rule;
+          return item;
+        }),
+      );
+      const hasRules = Boolean(entry.budget || entry.rules?.length);
+      $('rules-box').classList.remove('appear');
+      $('rules-box').hidden = !hasRules || drawn;
+      $('rules-box').dataset.show = hasRules ? 'yes' : '';
+      show('person');
+    }
+
+    function openGift() {
+      const gift = $('gift');
+      if (gift.disabled || gift.classList.contains('open')) return;
+      gift.classList.add('open');
+      if (!reducedMotion.matches) confetti(gift);
+      setTimeout(() => {
+        // The tag says who it's from, so the greeting would repeat the name.
+        $('greeting').hidden = true;
+        $('wrapped').hidden = true;
+        $('revealed').hidden = false;
+        if ($('rules-box').dataset.show) {
+          $('rules-box').hidden = false;
+          $('rules-box').classList.add('appear');
+        }
+      }, reducedMotion.matches ? 0 : 450);
+    }
+
+    $('gift').addEventListener('click', openGift);
+
+    // Hold to reveal: the name shows while the tag is pressed and hides as soon as it's let go.
+    const HINT = 'Håll fingret på lappen för att se namnet. När du släpper taget döljs det igen.';
+    const HINT_HOLDING = 'Släpp taget för att dölja namnet.';
+    const peek = $('peek');
+    const holding = (on) => {
+      peek.classList.toggle('holding', on);
+      $('peek-hint').textContent = on ? HINT_HOLDING : HINT;
+    };
+    peek.addEventListener('pointerdown', (event) => {
+      event.preventDefault();
+      peek.setPointerCapture(event.pointerId);
+      holding(true);
+    });
+    for (const type of ['pointerup', 'pointercancel', 'lostpointercapture', 'blur']) {
+      peek.addEventListener(type, () => holding(false));
+    }
+    peek.addEventListener('contextmenu', (event) => event.preventDefault());
+    peek.addEventListener('keydown', (event) => {
+      if (event.key === ' ' || event.key === 'Enter') {
+        event.preventDefault();
+        holding(true);
+      }
+    });
+    peek.addEventListener('keyup', (event) => {
+      if (event.key === ' ' || event.key === 'Enter') holding(false);
+    });
+    document.addEventListener('visibilitychange', () => holding(false));
+
+    // The master view: names and passwords, but never the draw
+
+    function showAdmin(vault) {
+      const count = vault.people.length;
+      $('admin-status').textContent =
+        `${count} deltagare. ${vault.draw ? 'Lottningen är gjord.' : 'Lottningen är inte gjord än.'}`;
+
+      const people = [...vault.people].sort((a, b) => a.name.localeCompare(b.name, 'sv'));
+      $('people').replaceChildren(...people.map(personRow));
+      show('admin');
+    }
+
+    function personRow(person) {
+      const item = document.createElement('li');
+      const row = document.createElement('div');
+      row.className = 'row';
+
+      const name = document.createElement('span');
+      name.className = 'name';
+      name.textContent = person.name;
+
+      const password = document.createElement('code');
+      password.className = 'password masked';
+      password.textContent = '••••••••';
+
+      const reveal = document.createElement('button');
+      reveal.type = 'button';
+      reveal.className = 'small';
+      reveal.textContent = 'Visa';
+      reveal.setAttribute('aria-label', `Visa lösenord för ${person.name}`);
+      reveal.addEventListener('click', () => {
+        const masked = password.classList.toggle('masked');
+        password.textContent = masked ? '••••••••' : person.password;
+        reveal.textContent = masked ? 'Visa' : 'Dölj';
+        reveal.setAttribute('aria-label', `${masked ? 'Visa' : 'Dölj'} lösenord för ${person.name}`);
+      });
+
+      const copy = document.createElement('button');
+      copy.type = 'button';
+      copy.className = 'small';
+      copy.textContent = 'Kopiera';
+      copy.setAttribute('aria-label', `Kopiera lösenord för ${person.name}`);
+      copy.addEventListener('click', async () => {
+        try {
+          await navigator.clipboard.writeText(person.password);
+          copy.textContent = 'Kopierat';
+        } catch {
+          copy.textContent = 'Det gick inte';
+        }
+        setTimeout(() => (copy.textContent = 'Kopiera'), 1500);
+      });
+
+      row.append(name, reveal, copy);
+      item.append(row, password);
+      return item;
+    }
+
+    // Decorations
+
+    function confetti(from) {
+      const box = from.getBoundingClientRect();
+      const layer = document.querySelector('.confetti');
+      const pieces = Array.from({ length: 60 }, () => {
+        const piece = document.createElement('span');
+        const angle = Math.random() * Math.PI * 2;
+        const distance = 70 + Math.random() * 160;
+        piece.style.setProperty('--x0', `${box.left + box.width / 2}px`);
+        piece.style.setProperty('--y0', `${box.top + box.height / 2}px`);
+        piece.style.setProperty('--tx', `${Math.cos(angle) * distance}px`);
+        piece.style.setProperty('--ty', `${Math.sin(angle) * distance - 80}px`);
+        piece.style.setProperty('--r', `${(Math.random() - 0.5) * 900}deg`);
+        piece.style.setProperty('--w', `${5 + Math.random() * 5}px`);
+        piece.style.setProperty('--h', `${8 + Math.random() * 8}px`);
+        piece.style.setProperty('--c', FESTIVE[Math.floor(Math.random() * FESTIVE.length)]);
+        return piece;
+      });
+      layer.append(...pieces);
+      setTimeout(() => pieces.forEach((piece) => piece.remove()), 1600);
+    }
+
+    function stringLights() {
+      const box = document.querySelector('.lights');
+      const width = box.clientWidth;
+      const loops = Math.max(2, Math.round(width / 300));
+      const perLoop = width < 500 ? 4 : 5;
+      const top = 2;
+      const sag = width < 500 ? 22 : 30;
+      let path = `M0 ${top}`;
+      const bulbs = [];
+      for (let i = 0; i < loops; i++) {
+        const x0 = (i / loops) * width;
+        const x1 = ((i + 1) / loops) * width;
+        path += ` Q${(x0 + x1) / 2} ${top + 2 * sag} ${x1} ${top}`;
+        for (let j = 1; j <= perLoop; j++) {
+          const t = j / (perLoop + 1);
+          const bulb = document.createElement('span');
+          bulb.className = 'bulb';
+          bulb.style.left = `${x0 + t * (x1 - x0)}px`;
+          bulb.style.top = `${top + 4 * sag * t * (1 - t) + 3}px`;
+          bulb.style.setProperty('--c', FESTIVE[(i * perLoop + j) % FESTIVE.length]);
+          bulb.style.setProperty('--tilt', `${(Math.random() - 0.5) * 16}deg`);
+          bulb.style.setProperty('--speed', `${2 + Math.random() * 2.5}s`);
+          bulb.style.setProperty('--delay', `${-Math.random() * 4}s`);
+          bulbs.push(bulb);
+        }
+      }
+      box.querySelector('path').setAttribute('d', path);
+      box.querySelectorAll('.bulb').forEach((bulb) => bulb.remove());
+      box.append(...bulbs);
+    }
+
+    function letItSnow() {
+      const snow = document.querySelector('.snow');
+      for (let i = 0; i < 45; i++) {
+        const flake = document.createElement('span');
+        const isFlake = i % 8 === 0;
+        if (isFlake) {
+          flake.className = 'flake';
+          flake.textContent = '❄';
+        }
+        flake.style.setProperty('--s', `${isFlake ? 10 + Math.random() * 8 : 2 + Math.random() * 4}px`);
+        flake.style.setProperty('--x', `${Math.random() * 100}%`);
+        flake.style.setProperty('--o', (0.3 + Math.random() * 0.5).toFixed(2));
+        flake.style.setProperty('--d', `${10 + Math.random() * 14}s`);
+        flake.style.setProperty('--delay', `${-Math.random() * 24}s`);
+        flake.style.setProperty('--drift', `${(Math.random() - 0.5) * 100}px`);
+        flake.style.setProperty('--spin', `${isFlake ? (Math.random() - 0.5) * 360 : 0}deg`);
+        snow.append(flake);
+      }
+    }
+
+    let resizeTimer;
+    let lastWidth = innerWidth;
+    addEventListener('resize', () => {
+      // Mobile browsers fire resize when the address bar hides; only redraw when the width changes.
+      if (innerWidth === lastWidth) return;
+      lastWidth = innerWidth;
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(stringLights, 150);
+    });
+
+    stringLights();
+    letItSnow();
+    load();
+  </script>
+</body>
+</html>
