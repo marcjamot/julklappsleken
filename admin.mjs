@@ -17,6 +17,10 @@ Commands:
   draw <year> [--force]         Draw who gives to whom
   regen-password <year> <name>  Give someone a new password
 
+When redrawing with draw --force, you can leave some people out:
+  --keep "Anna,Erik"            They keep who they give to
+  --fresh "Anna,Erik"           They get someone none of them has now
+
 Every command asks for the master password, unless MASTER_PASSWORD is set
 in .env (see .env.example). Commit and push data/ afterwards.
 The editor comes from $VISUAL or $EDITOR. For VS Code use EDITOR="code --wait".`;
@@ -46,6 +50,9 @@ const WORDS = [
   'prinskorv', 'advent', 'kalender', 'tindra', 'norrsken', 'pyssel', 'julkort', 'karamell',
   'choklad', 'nougat', 'kanelbulle', 'julafton', 'knut', 'staffan', 'isbana', 'midvinter',
 ];
+
+// How many random shuffles `draw` tries before giving up.
+const DRAW_ATTEMPTS = 1_000_000;
 
 class AdminError extends Error {}
 
@@ -90,23 +97,35 @@ async function draw(year, args) {
   const minimum = vault.drawRules.noMutualPairs ? 3 : 2;
   if (names.length < minimum) throw new AdminError(`Need at least ${minimum} people to draw.`);
 
+  const keep = peopleOption(args, '--keep', vault, year);
+  const fresh = peopleOption(args, '--fresh', vault, year);
+  if ((keep.length || fresh.length) && !vault.draw) {
+    throw new AdminError(`${year} isn't drawn yet, so there's nothing to keep or change.`);
+  }
+  const both = keep.find((name) => fresh.includes(name));
+  if (both) throw new AdminError(`${both} can't be in both --keep and --fresh.`);
+
+  // --keep givers keep who they have. --fresh givers get someone none of them has now.
+  const kept = Object.fromEntries(keep.map((giver) => [giver, vault.draw[giver]]));
+  const avoid = fresh.flatMap((giver) => fresh.map((other) => [giver, vault.draw[other]]));
+
   const previous = await previousDraws(year, vault.drawRules.avoidPreviousYears, master);
-  vault.draw = makeDraw(names, vault.drawRules, previous);
+  vault.draw = makeDraw(names, vault.drawRules, previous, kept, avoid);
   if (!vault.draw) {
-    throw new AdminError('No draw satisfies the draw rules. Try fewer exclude/block pairs or a lower avoidPreviousYears.');
+    throw new AdminError(
+      `No random draw fit the draw rules in ${DRAW_ATTEMPTS.toLocaleString('en')} tries. Nothing saved. Try fewer exclude/block pairs, a lower avoidPreviousYears or fewer --keep/--fresh names.`,
+    );
   }
   await save(file, master, vault);
-  console.log(`Drew ${names.length} people for ${year}. Commit and push data/ to publish.`);
+  const drew = keep.length ? `Kept ${keep.length} and redrew ${names.length - keep.length}` : `Drew ${names.length}`;
+  console.log(`${drew} people for ${year}. Commit and push data/ to publish.`);
 }
 
 async function regenPassword(year, args) {
   const name = args.join(' ').trim();
   if (!name) throw new AdminError('Usage: node admin.mjs regen-password <year> <name>');
   const { file, master, vault } = await unlock(year);
-  const person = vault.people.find((p) => p.name.toLowerCase() === name.toLowerCase());
-  if (!person) {
-    throw new AdminError(`"${name}" isn't in ${year}. People: ${vault.people.map((p) => p.name).join(', ')}`);
-  }
+  const person = findPerson(vault, name, year);
   person.password = newPassword(vault.people);
   await save(file, master, vault);
   console.log(`New password for ${person.name}: ${person.password}`);
@@ -200,6 +219,23 @@ async function previousDraws(year, count, master) {
     if (vault?.draw) draws.push(vault.draw);
   }
   return draws;
+}
+
+function findPerson(vault, name, year) {
+  const person = vault.people.find((p) => p.name.toLowerCase() === name.toLowerCase());
+  if (!person) {
+    throw new AdminError(`"${name}" isn't in ${year}. People: ${vault.people.map((p) => p.name).join(', ')}`);
+  }
+  return person;
+}
+
+// Reads the names after a flag, like --keep "Anna,Erik".
+function peopleOption(args, flag, vault, year) {
+  const index = args.indexOf(flag);
+  if (index === -1) return [];
+  const value = args[index + 1];
+  if (!value || value.startsWith('--')) throw new AdminError(`Give names after ${flag}, like ${flag} "Anna,Erik".`);
+  return value.split(',').map((name) => findPerson(vault, name.trim(), year).name);
 }
 
 function yearPath(year) {
@@ -304,58 +340,27 @@ function validateConfig(input) {
 
 // Drawing
 
-function makeDraw(names, drawRules, previousDraws) {
+// `kept` maps givers to receivers that stay as they are. `avoid` holds extra [giver, receiver] pairs to ban.
+function makeDraw(names, drawRules, previousDraws, kept = {}, avoid = []) {
   const banned = new Set();
   const ban = (giver, receiver) => banned.add(`${giver}\n${receiver}`);
   for (const [a, b] of drawRules.exclude) ban(a, b), ban(b, a);
   for (const [a, b] of drawRules.block) ban(a, b);
   for (const draw of previousDraws) for (const [giver, receiver] of Object.entries(draw)) ban(giver, receiver);
+  for (const [giver, receiver] of avoid) ban(giver, receiver);
 
   const allowed = (giver, receiver, draw) =>
     giver !== receiver && !banned.has(`${giver}\n${receiver}`) && !(drawRules.noMutualPairs && draw[receiver] === giver);
 
-  // Random shuffles first, since that gives every valid draw the same chance.
-  for (let attempt = 0; attempt < 20_000; attempt++) {
-    const receivers = shuffle([...names]);
-    const draw = Object.fromEntries(names.map((giver, i) => [giver, receivers[i]]));
+  // Only random shuffles, so every valid draw has the same chance. If none fits, there's no draw.
+  const givers = names.filter((giver) => !(giver in kept));
+  const open = names.filter((receiver) => !Object.values(kept).includes(receiver));
+  for (let attempt = 0; attempt < DRAW_ATTEMPTS; attempt++) {
+    const receivers = shuffle([...open]);
+    const draw = { ...kept, ...Object.fromEntries(givers.map((giver, i) => [giver, receivers[i]])) };
     if (names.every((giver) => allowed(giver, draw[giver], draw))) return draw;
   }
-  // With strict rules a valid shuffle can be rare, so search for one instead.
-  return searchDraw(names, allowed);
-}
-
-function searchDraw(names, allowed) {
-  const draw = {};
-  const taken = new Set();
-  let steps = 0;
-
-  function step() {
-    if (++steps > 200_000) return false;
-    const open = names.filter((giver) => !(giver in draw));
-    if (!open.length) return true;
-    // Every receiver still needs someone who can give to them.
-    for (const receiver of names) {
-      if (!taken.has(receiver) && !open.some((giver) => allowed(giver, receiver, draw))) return false;
-    }
-    // Continue with the giver who has the fewest options.
-    let giver;
-    let options;
-    for (const candidate of shuffle(open)) {
-      const candidateOptions = names.filter((receiver) => !taken.has(receiver) && allowed(candidate, receiver, draw));
-      if (!candidateOptions.length) return false;
-      if (!options || candidateOptions.length < options.length) [giver, options] = [candidate, candidateOptions];
-    }
-    for (const receiver of shuffle(options)) {
-      draw[giver] = receiver;
-      taken.add(receiver);
-      if (step()) return true;
-      delete draw[giver];
-      taken.delete(receiver);
-    }
-    return false;
-  }
-
-  return step() ? draw : null;
+  return null;
 }
 
 function shuffle(items) {
